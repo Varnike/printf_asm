@@ -1,1 +1,1 @@
-%define BUFFSIZE	1024
+%define BUFFSIZE	512
