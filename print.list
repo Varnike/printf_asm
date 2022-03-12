@@ -61,340 +61,573 @@
     10                                  %strlen		ARGLEN	ARGSTR
     11                                  ;------------------------------------------------
     12                                  
-    13                                  _start:		_mpush '&', '1', '2', 0x1290, Msg, test	; TODO cdecl
+    13                                  _start:		_mpush Msg, '2', 1488, 0x0F0F0F0F, test	; TODO cdecl
     13                              <1> _start: 
     19                              <1>  %rep %0
     20                              <1>  push %1
     21                              <1>  %rotate 1
     22                              <1>  %endrep
-    20 00000000 6A26                <2>  push %1
+    20 00000000 68[1B000000]        <2>  push %1
     21                              <2>  %rotate 1
-    20 00000002 6A31                <2>  push %1
+    20 00000005 6A32                <2>  push %1
     21                              <2>  %rotate 1
-    20 00000004 6A32                <2>  push %1
+    20 00000007 68D0050000          <2>  push %1
     21                              <2>  %rotate 1
-    20 00000006 6890120000          <2>  push %1
+    20 0000000C 680F0F0F0F          <2>  push %1
     21                              <2>  %rotate 1
-    20 0000000B 68[0F000000]        <2>  push %1
-    21                              <2>  %rotate 1
-    20 00000010 68[00000000]        <2>  push %1
+    20 00000011 68[00000000]        <2>  push %1
     21                              <2>  %rotate 1
     23                              <1> 
-    14                                  
-    15 00000015 E810000000              		call printf
-    16                                  
-    17                                  		_mrpop rcx, rcx, rcx, rcx, rcx, rcx
+    14 00000016 49BF-                   		mov r15, atoi_num_buff
+    14 00000018 [6900000000000000] 
+    15                                  
+    16 00000020 E80F000000              		call printf
+    17                                  
+    18                                  		_mrpop rcx, rcx, rcx, rcx, rcx
      7                              <1>  %rep %0
      8                              <1>  %rotate -1
      9                              <1>  pop %1
     10                              <1>  %endrep
      8                              <2>  %rotate -1
-     9 0000001A 59                  <2>  pop %1
+     9 00000025 59                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 0000001B 59                  <2>  pop %1
+     9 00000026 59                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 0000001C 59                  <2>  pop %1
+     9 00000027 59                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 0000001D 59                  <2>  pop %1
+     9 00000028 59                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 0000001E 59                  <2>  pop %1
-     8                              <2>  %rotate -1
-     9 0000001F 59                  <2>  pop %1
+     9 00000029 59                  <2>  pop %1
     11                              <1> 
-    18                                  
-    19                                  fin:
-    20 00000020 B83C000000              		mov rax, 0x3c
-    21 00000025 4831FF                  		xor rdi, rdi
-    22 00000028 0F05                    		syscall
-    23                                  
-    24                                  section		.data
-    25 00000000 257325252564256325-     test:		db "%s%%%d%c%c", 0xa, "gg", 0xa, 0x0
-    25 00000009 630A67670A00       
-    26 0000000F 282E592E290A00          Msg:		db "(.Y.)", 0x0a, 0x0
-    27                                  MsgLen		equ $ - Msg
-    28                                  
-    29                                  section		.text
-    30                                  
-    31                                  ;------------------------------------------------
-    32                                  ; printf
-    33                                  ;------------------------------------------------
-    34                                  ; Entry: rsi - string addr
-    35                                  ;	  other args via stack
-    36                                  ; Note_: rsi - curr adr in buffer
-    37                                  ;
-    38                                  ;------------------------------------------------
-    39                                  ; TODO buffer(write on overflow) or on newline
-    40                                  
-    41 0000002A 55                      printf:		push rbp
-    42 0000002B 4889E5                  		mov rbp, rsp
-    43                                  
-    44 0000002E 488B7510                		mov rsi, [rbp + 16]
-    45 00000032 48BF-                   		mov rdi, buffer
-    45 00000034 [A600000000000000] 
-    46                                  		
-    47 0000003C 803E00                  .print_loop:	cmp byte [rsi], 0x0		; \0
-    48 0000003F 7420                    		je .print_end
-    49 00000041 803E25                  		cmp byte [rsi], '%'		; arg flag
-    50 00000044 750F                    		jne .save
-    51                                  		
-    52 00000046 48FFC6                  		inc rsi
-    53 00000049 8A1E                    		mov byte bl, [rsi]		; TODO
-    54 0000004B E813000000              		call ident_arg
-    55 00000050 48FFC6                  		inc rsi
-    56                                  
-    57 00000053 EBE7                    		jmp .print_loop
-    58                                  
-    59 00000055 8A06                    .save:		mov byte al, [rsi]		; TODO movsb?
-    60 00000057 E886000000              		call buff_ins	
-    61 0000005C 48FFC6                  		inc rsi
-    62                                  
-    63 0000005F EBDB                    		jmp .print_loop
-    64                                  
-    65 00000061 5D                      .print_end:	pop rbp
-    66 00000062 C3                      		ret
-    67                                  ;------------------------------------------------
-    68                                  
+    19                                  
+    20                                  fin:
+    21 0000002A B83C000000              		mov rax, 0x3c
+    22 0000002F 4831FF                  		xor rdi, rdi
+    23 00000032 0F05                    		syscall
+    24                                  
+    25                                  section		.data
+    26 00000000 5F5F25785F5F25645F-     test:		db "__%x__%d__%%__%c__%s__", 0xa, "gg", 0xa, 0x0
+    26 00000009 5F25255F5F25635F5F-
+    26 00000012 25735F5F0A67670A00 
+    27 0000001B 282E592E2900            Msg:		db "(.Y.)", 0x0
+    28                                  MsgLen		equ $ - Msg
+    29                                  
+    30                                  section		.text
+    31                                  
+    32                                  ;------------------------------------------------
+    33                                  ; printf
+    34                                  ;------------------------------------------------
+    35                                  ; Entry: rsi - string addr
+    36                                  ;	  other args via stack
+    37                                  ; Note_: rsi - curr adr in buffer
+    38                                  ;
+    39                                  ;------------------------------------------------
+    40                                  ; TODO buffer(write on overflow) or on newline
+    41                                  
+    42 00000034 55                      printf:		push rbp
+    43 00000035 4889E5                  		mov rbp, rsp
+    44                                  
+    45 00000038 488B7510                		mov rsi, [rbp + 16]
+    46 0000003C 48BF-                   		mov rdi, buffer
+    46 0000003E [B200000000000000] 
+    47                                  		
+    48 00000046 803E00                  .print_loop:	cmp byte [rsi], 0x0		; \0
+    49 00000049 7420                    		je .print_end
+    50 0000004B 803E25                  		cmp byte [rsi], '%'		; arg flag
+    51 0000004E 750F                    		jne .save
+    52                                  		
+    53 00000050 48FFC6                  		inc rsi
+    54 00000053 8A1E                    		mov byte bl, [rsi]		; TODO
+    55 00000055 E813000000              		call ident_arg
+    56 0000005A 48FFC6                  		inc rsi
+    57                                  
+    58 0000005D EBE7                    		jmp .print_loop
+    59                                  
+    60 0000005F 8A06                    .save:		mov byte al, [rsi]		; TODO movsb?
+    61 00000061 E813010000              		call buff_ins	
+    62 00000066 48FFC6                  		inc rsi
+    63                                  
+    64 00000069 EBDB                    		jmp .print_loop
+    65                                  
+    66 0000006B 5D                      .print_end:	pop rbp
+    67 0000006C C3                      		ret
+    68                                  ;------------------------------------------------
     69                                  
-    70                                  ;------------------------------------------------
-    71                                  ; Entry: bl  - char
-    72                                  ; 	 rdi - current free addr in buffer
-    73                                  ; Destr: rax, rcx, rdx, rdi
-    74                                  ; Exit:  rax - free adr in buff, _note: rax = rdi
-    75                                  ;------------------------------------------------
-    76 00000063 B906000000              ident_arg:	mov rcx, ARGLEN - 1
-    77                                  
-    78 00000068 3A99[9E000000]          .ident_loop:	cmp byte bl, args[rcx]
-    79 0000006E 7403                    		je .switch
-    80 00000070 E2F6                    		loop .ident_loop
-    81                                  
-    82                                  		; default: dont do anything
-    83                                  
-    84 00000072 C3                      		ret
+    70                                  %macro		_two_sys_write 3
+    71                                  		_mpush %1, %2, %3
+    72                                  		mov rcx, [rbp + 16]
+    73                                  		push rcx
+    74                                  
+    75                                  		call atoi
+    76                                  
+    77                                  		_mrpop r8, r8, r8, r8
+    78                                  
+    79                                  		mov rcx, atoi_num_buff
+    80                                  		
+    81                                  		call str_write
+    82                                  
+    83                                  		jmp .return
+    84                                  %endmacro
     85                                  
-    86 00000073 4883C508                .switch		add rbp, 0x8
-    87                                  
-    88 00000077 488B0CCD[16000000]      		mov rcx, qword jmp_table[0 + rcx * 8]
-    89 0000007F FFE1                    		jmp rcx
-    90                                  
-    91 00000081 488B4510                .case_d:	mov rax, [rbp + 16]
-    92 00000085 E8A5000000              		call dectoi
+    86                                  ;------------------------------------------------
+    87                                  ; Entry: bl  - char
+    88                                  ; 	 rdi - current free addr in buffer
+    89                                  ; Destr: rax, rcx, rdx, rdi
+    90                                  ; Exit:  rax - free adr in buff, _note: rax = rdi
+    91                                  ;------------------------------------------------
+    92 0000006D B906000000              ident_arg:	mov rcx, ARGLEN - 1
     93                                  
-    94 0000008A 48890425[5E000000]      		mov qword [atoi_num_buff], rax
-    95 00000092 48B9-                   		mov rcx, atoi_num_buff
-    95 00000094 [5E00000000000000] 
-    96 0000009C EB25                    		jmp .s_loop
+    94 00000072 3A99[AA000000]          .ident_loop:	cmp byte bl, args[rcx]
+    95 00000078 740B                    		je .switch
+    96 0000007A E2F6                    		loop .ident_loop
     97                                  		
-    98 0000009E EB3E                    		jmp .return
-    99                                  
-   100 000000A0 B802000000              .case_x:	mov rax, 2
-   101 000000A5 EB37                    		jmp .return
+    98 0000007C 3A99[AA000000]          		cmp byte bl, args[rcx]
+    99 00000082 7401                    		je .switch
+   100                                  
+   101                                  		; default: dont do anything
    102                                  
-   103 000000A7 B803000000              .case_o:	mov rax, 3
-   104 000000AC EB30                    		jmp .return
-   105                                  
-   106 000000AE B804000000              .case_b:	mov rax, 4
-   107 000000B3 EB29                    		jmp .return
-   108                                  ; OK
-   109 000000B5 8A4510                  .case_c:	mov byte al, [rbp + 16]
-   110 000000B8 E825000000              		call buff_ins
-   111 000000BD EB1F                    		jmp .return
+   103 00000084 C3                      		ret
+   104                                  
+   105 00000085 4883C508                .switch		add rbp, 0x8
+   106                                  
+   107 00000089 488B0CCD[21000000]      		mov rcx, qword jmp_table[0 + rcx * 8]
+   108 00000091 FFE1                    		jmp rcx
+   109                                  
+   110 00000093 488B4510                .case_d:	mov rax, [rbp + 16]
+   111 00000097 E82A010000              		call dectoi
    112                                  
-   113                                  ; OK
-   114 000000BF 488B4D10                .case_s:	mov rcx, [rbp + 16]
-   115                                  
-   116 000000C3 8A01                    .s_loop:	mov byte al, [rcx]
-   117 000000C5 3C00                    		cmp al, 0x0
-   118                                  
-   119 000000C7 7415                    		je .return
-   120                                  		
-   121 000000C9 E814000000              		call buff_ins
-   122                                  
-   123 000000CE 48FFC1                  		inc rcx
-   124 000000D1 EBF0                    		jmp .s_loop
-   125                                  	
-   126                                  ; OK
-   127 000000D3 4883ED08                .case_per:	sub rbp, 0x8
-   128 000000D7 88D8                    		mov al, bl
-   129 000000D9 E804000000              		call buff_ins
-   130                                  
-   131 000000DE 4889F8                  .return:	mov rax, rdi
-   132 000000E1 C3                      		ret
-   133                                  ;------------------------------------------------
-   134                                  
-   135                                  ;------------------------------------------------
-   136                                  ; Entry: rdi - current free position in buffer
-   137                                  ; 	 al  - char to write in buffer
-   138                                  ;
-   139                                  ; Writes symbol to buffer. If buffer if full or
-   140                                  ; newline character detected, buffer will be written
-   141                                  ; to console via syscall(1). After writing buffer will
-   142                                  ; be cleared
-   143                                  ; Exit:	 rax - free pos in buffer(rdi = rax)
-   144                                  ;------------------------------------------------
-   145 000000E2 8807                    buff_ins:	mov [rdi], al
-   146 000000E4 48FFC7                  		inc rdi
-   147                                  
-   148 000000E7 4881FF[A5020000]        		cmp rdi, buffer +  BUFFSIZE - 1	; last always \0
-   149 000000EE 7705                    		ja .call_write
-   150                                  
-   151 000000F0 3C0A                    		cmp al, 0xa			; if \n
-   152 000000F2 7401                    		je .call_write
-   153                                  		
-   154 000000F4 C3                      		ret
-   155                                  
-   156 000000F5 4889FA                  .call_write:	mov rdx, rdi
-   157 000000F8 4881EA[A6000000]        		sub rdx, buffer
-   158 000000FF E80E000000              		call write_buff
-   159 00000104 48BF-                   		mov rdi, buffer			; now buffer is free
-   159 00000106 [A600000000000000] 
-   160 0000010E 4889F8                  		mov rax, rdi			; TODO
-   161                                  		
-   162 00000111 C3                      		ret
-   163                                  ;------------------------------------------------
-   164                                  
-   165                                  ;------------------------------------------------
-   166                                  ; write_buff
-   167                                  ;------------------------------------------------
-   168                                  ; Entry: edx - buffer size
-   169                                  ;_Note:	 rsi = addres of buffer
-   170                                  ; Destr: rax
-   171                                  ;------------------------------------------------
-   172                                  write_buff:	_mpush rdi, rsi, rcx		; TODO ?
-   172                              <1> write_buff: 
-    19                              <1>  %rep %0
-    20                              <1>  push %1
-    21                              <1>  %rotate 1
-    22                              <1>  %endrep
-    20 00000112 57                  <2>  push %1
+   113 0000009C 48890425[69000000]      		mov qword [atoi_num_buff], rax
+   114 000000A4 C60425[71000000]00      		mov byte atoi_num_buff[8], 0x0
+   115 000000AC 48B9-                   		mov rcx, atoi_num_buff
+   115 000000AE [6900000000000000] 
+   116                                  
+   117 000000B6 E8AD000000              		call str_write
+   118 000000BB E9A4000000              		jmp .return
+   119                                  
+   120                                  .case_x:	_two_sys_write atoi_num_buff, 8, 0x10
+   120                              <1> .case_x: 
+    71                              <1>  _mpush %1, %2, %3
+    19                              <2>  %rep %0
+    20                              <2>  push %1
     21                              <2>  %rotate 1
-    20 00000113 56                  <2>  push %1
+    22                              <2>  %endrep
+    20 000000C0 68[69000000]        <3>  push %1
+    21                              <3>  %rotate 1
+    20 000000C5 6A08                <3>  push %1
+    21                              <3>  %rotate 1
+    20 000000C7 6A10                <3>  push %1
+    21                              <3>  %rotate 1
+    23                              <2> 
+    72 000000C9 488B4D10            <1>  mov rcx, [rbp + 16]
+    73 000000CD 51                  <1>  push rcx
+    74                              <1> 
+    75 000000CE E826010000          <1>  call atoi
+    76                              <1> 
+    77                              <1>  _mrpop r8, r8, r8, r8
+     7                              <2>  %rep %0
+     8                              <2>  %rotate -1
+     9                              <2>  pop %1
+    10                              <2>  %endrep
+     8                              <3>  %rotate -1
+     9 000000D3 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 000000D5 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 000000D7 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 000000D9 4158                <3>  pop %1
+    11                              <2> 
+    78                              <1> 
+    79 000000DB 48B9-               <1>  mov rcx, atoi_num_buff
+    79 000000DD [6900000000000000]  <1>
+    80                              <1> 
+    81 000000E5 E87E000000          <1>  call str_write
+    82                              <1> 
+    83 000000EA EB78                <1>  jmp .return
+   121                                  
+   122                                  .case_o:	_two_sys_write atoi_num_buff, 11, 0x8
+   122                              <1> .case_o: 
+    71                              <1>  _mpush %1, %2, %3
+    19                              <2>  %rep %0
+    20                              <2>  push %1
     21                              <2>  %rotate 1
-    20 00000114 51                  <2>  push %1
+    22                              <2>  %endrep
+    20 000000EC 68[69000000]        <3>  push %1
+    21                              <3>  %rotate 1
+    20 000000F1 6A0B                <3>  push %1
+    21                              <3>  %rotate 1
+    20 000000F3 6A08                <3>  push %1
+    21                              <3>  %rotate 1
+    23                              <2> 
+    72 000000F5 488B4D10            <1>  mov rcx, [rbp + 16]
+    73 000000F9 51                  <1>  push rcx
+    74                              <1> 
+    75 000000FA E8FA000000          <1>  call atoi
+    76                              <1> 
+    77                              <1>  _mrpop r8, r8, r8, r8
+     7                              <2>  %rep %0
+     8                              <2>  %rotate -1
+     9                              <2>  pop %1
+    10                              <2>  %endrep
+     8                              <3>  %rotate -1
+     9 000000FF 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 00000101 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 00000103 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 00000105 4158                <3>  pop %1
+    11                              <2> 
+    78                              <1> 
+    79 00000107 48B9-               <1>  mov rcx, atoi_num_buff
+    79 00000109 [6900000000000000]  <1>
+    80                              <1> 
+    81 00000111 E852000000          <1>  call str_write
+    82                              <1> 
+    83 00000116 EB4C                <1>  jmp .return
+   123                                  
+   124                                  .case_b:	_two_sys_write atoi_num_buff, 32, 0x2
+   124                              <1> .case_b: 
+    71                              <1>  _mpush %1, %2, %3
+    19                              <2>  %rep %0
+    20                              <2>  push %1
     21                              <2>  %rotate 1
-    23                              <1> 
-   173                                  		
-   174 00000115 B801000000              		mov rax, 0x01
-   175 0000011A BF01000000              		mov rdi, 1
-   176 0000011F 48BE-                   		mov rsi, buffer
-   176 00000121 [A600000000000000] 
-   177                                  
-   178 00000129 0F05                    		syscall
+    22                              <2>  %endrep
+    20 00000118 68[69000000]        <3>  push %1
+    21                              <3>  %rotate 1
+    20 0000011D 6A20                <3>  push %1
+    21                              <3>  %rotate 1
+    20 0000011F 6A02                <3>  push %1
+    21                              <3>  %rotate 1
+    23                              <2> 
+    72 00000121 488B4D10            <1>  mov rcx, [rbp + 16]
+    73 00000125 51                  <1>  push rcx
+    74                              <1> 
+    75 00000126 E8CE000000          <1>  call atoi
+    76                              <1> 
+    77                              <1>  _mrpop r8, r8, r8, r8
+     7                              <2>  %rep %0
+     8                              <2>  %rotate -1
+     9                              <2>  pop %1
+    10                              <2>  %endrep
+     8                              <3>  %rotate -1
+     9 0000012B 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 0000012D 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 0000012F 4158                <3>  pop %1
+     8                              <3>  %rotate -1
+     9 00000131 4158                <3>  pop %1
+    11                              <2> 
+    78                              <1> 
+    79 00000133 48B9-               <1>  mov rcx, atoi_num_buff
+    79 00000135 [6900000000000000]  <1>
+    80                              <1> 
+    81 0000013D E826000000          <1>  call str_write
+    82                              <1> 
+    83 00000142 EB20                <1>  jmp .return
+   125                                  ; OK
+   126 00000144 8A4510                  .case_c:	mov byte al, [rbp + 16]
+   127 00000147 E82D000000              		call buff_ins
+   128 0000014C EB16                    		jmp .return
+   129                                  
+   130                                  ; OK
+   131 0000014E 488B4D10                .case_s:	mov rcx, [rbp + 16]
+   132                                  
+   133 00000152 E811000000              		call str_write
+   134 00000157 EB0B                    		jmp .return
+   135                                  ; OK
+   136 00000159 4883ED08                .case_per:	sub rbp, 0x8
+   137 0000015D 88D8                    		mov al, bl
+   138 0000015F E815000000              		call buff_ins
+   139                                  
+   140 00000164 4889F8                  .return:	mov rax, rdi
+   141 00000167 C3                      		ret
+   142                                  ;------------------------------------------------
+   143                                  
+   144                                  
+   145                                  
+   146                                  ;------------------------------------------------
+   147                                  ; str_write
+   148                                  ;------------------------------------------------
+   149                                  ; Entry: rcx - address of null-terminated string
+   150                                  ;------------------------------------------------
+   151 00000168 8A01                    str_write:	mov byte al, [rcx]
+   152 0000016A 3C00                    		cmp al, 0x0
+   153                                  
+   154 0000016C 740A                    		je .return
+   155                                  		
+   156 0000016E E806000000              		call buff_ins
+   157                                  
+   158 00000173 48FFC1                  		inc rcx
+   159 00000176 EBF0                    		jmp str_write
+   160                                  
+   161 00000178 C3                      .return:	ret
+   162                                  ;------------------------------------------------
+   163                                  
+   164                                  ;------------------------------------------------
+   165                                  ; Entry: rdi - current free position in buffer
+   166                                  ; 	 al  - char to write in buffer
+   167                                  ;
+   168                                  ; Writes symbol to buffer. If buffer if full or
+   169                                  ; newline character detected, buffer will be written
+   170                                  ; to console via syscall(1). After writing buffer will
+   171                                  ; be cleared
+   172                                  ; Exit:	 rax - free pos in buffer(rdi = rax)
+   173                                  ;------------------------------------------------
+   174 00000179 8807                    buff_ins:	mov [rdi], al
+   175 0000017B 48FFC7                  		inc rdi
+   176                                  
+   177 0000017E 4881FF[B1020000]        		cmp rdi, buffer +  BUFFSIZE - 1	; last always \0
+   178 00000185 7705                    		ja .call_write
    179                                  
-   180                                  		_mrpop rdi, rsi, rcx
-     7                              <1>  %rep %0
-     8                              <1>  %rotate -1
-     9                              <1>  pop %1
-    10                              <1>  %endrep
-     8                              <2>  %rotate -1
-     9 0000012B 59                  <2>  pop %1
-     8                              <2>  %rotate -1
-     9 0000012C 5E                  <2>  pop %1
-     8                              <2>  %rotate -1
-     9 0000012D 5F                  <2>  pop %1
-    11                              <1> 
-   181                                  
-   182 0000012E C3                      		ret
-   183                                  
-   184                                  ;------------------------------------------------
-   185                                  
-   186                                  
-   187                                  
-   188                                  
-   189                                  ;------------------------------------------------
-   190                                  ; dectoa
-   191                                  ;------------------------------------------------
-   192                                  ; Entry: 	rax - number to transform
-   193                                  ; algorithm taken from stackexchange.com/questions/142842/integer-to-ascii-algorithm-x86-assembly
+   180 00000187 3C0A                    		cmp al, 0xa			; if \n
+   181 00000189 7401                    		je .call_write
+   182                                  		
+   183 0000018B C3                      		ret
+   184                                  
+   185 0000018C 4889FA                  .call_write:	mov rdx, rdi
+   186 0000018F 4881EA[B2000000]        		sub rdx, buffer
+   187 00000196 E80E000000              		call write_buff
+   188 0000019B 48BF-                   		mov rdi, buffer			; now buffer is free
+   188 0000019D [B200000000000000] 
+   189 000001A5 4889F8                  		mov rax, rdi			; TODO
+   190                                  		
+   191 000001A8 C3                      		ret
+   192                                  ;------------------------------------------------
+   193                                  
    194                                  ;------------------------------------------------
-   195                                  dectoi:		_mpush rbx, rdx, rdi
-   195                              <1> dectoi: 
+   195                                  ; write_buff
+   196                                  ;------------------------------------------------
+   197                                  ; Entry: edx - buffer size
+   198                                  ;_Note:	 rsi = addres of buffer
+   199                                  ; Destr: rax
+   200                                  ;------------------------------------------------
+   201                                  write_buff:	_mpush rdi, rsi, rcx		; TODO ?
+   201                              <1> write_buff: 
     19                              <1>  %rep %0
     20                              <1>  push %1
     21                              <1>  %rotate 1
     22                              <1>  %endrep
-    20 0000012F 53                  <2>  push %1
+    20 000001A9 57                  <2>  push %1
     21                              <2>  %rotate 1
-    20 00000130 52                  <2>  push %1
+    20 000001AA 56                  <2>  push %1
     21                              <2>  %rotate 1
-    20 00000131 57                  <2>  push %1
+    20 000001AB 51                  <2>  push %1
     21                              <2>  %rotate 1
     23                              <1> 
-   196 00000132 BBCDCCCCCC              		mov ebx, 0xCCCCCCCD		; magic number
-   197 00000137 4831FF                  		xor rdi, rdi
-   198                                  
-   199 0000013A 89C1                    .loop:		mov ecx, eax			
-   200                                  
-   201 0000013C F7E3                    		mul ebx                         ; divide by 10	
-   202 0000013E C1EA03                  		shr edx, 3
-   203                                  
-   204 00000141 89D0                    		mov eax, edx 	
-   205                                  
-   206 00000143 678D1492                		lea edx, [edx*4 + edx]          ; multiply by 10
-   207 00000147 678D5412D0              		lea edx, [edx * 2 - '0']	; and prep for sub	
-   208 0000014C 29D1                    		sub ecx, edx
-   209                                  
-   210 0000014E 48C1E708                    		shl rdi, 8                      ; make room for byte
-   211 00000152 4801CF                  		add rdi, rcx
-   212                                  
-   213 00000155 4883F800                		cmp rax, 0
-   214 00000159 75DF                    		jnz .loop
-   215                                  
-   216 0000015B 4889F8                  		mov rax, rdi
-   217                                  
-   218                                  		_mrpop rbx, rdx, rdi
+   202                                  		
+   203 000001AC B801000000              		mov rax, 0x01
+   204 000001B1 BF01000000              		mov rdi, 1
+   205 000001B6 48BE-                   		mov rsi, buffer
+   205 000001B8 [B200000000000000] 
+   206                                  
+   207 000001C0 0F05                    		syscall
+   208                                  
+   209                                  		_mrpop rdi, rsi, rcx
      7                              <1>  %rep %0
      8                              <1>  %rotate -1
      9                              <1>  pop %1
     10                              <1>  %endrep
      8                              <2>  %rotate -1
-     9 0000015E 5F                  <2>  pop %1
+     9 000001C2 59                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 0000015F 5A                  <2>  pop %1
+     9 000001C3 5E                  <2>  pop %1
      8                              <2>  %rotate -1
-     9 00000160 5B                  <2>  pop %1
+     9 000001C4 5F                  <2>  pop %1
     11                              <1> 
-   219 00000161 C3                      		ret
-   220                                  
-   221                                  
-   222                                  
+   210                                  
+   211 000001C5 C3                      		ret
+   212                                  
+   213                                  ;------------------------------------------------
+   214                                  
+   215                                  
+   216                                  
+   217                                  
+   218                                  ;------------------------------------------------
+   219                                  ; dectoa
+   220                                  ;------------------------------------------------
+   221                                  ; Entry: 	rax - number to transform
+   222                                  ; algorithm taken from stackexchange.com/questions/142842/integer-to-ascii-algorithm-x86-assembly
    223                                  ;------------------------------------------------
-   224                                  section		.data
-   225                                  jmp_table:	_jmptbl_addr d, x, o, b, c, s, per
-   225                              <1> jmp_table: 
+   224                                  dectoi:		_mpush rbx, rdx, rdi
+   224                              <1> dectoi: 
+    19                              <1>  %rep %0
+    20                              <1>  push %1
+    21                              <1>  %rotate 1
+    22                              <1>  %endrep
+    20 000001C6 53                  <2>  push %1
+    21                              <2>  %rotate 1
+    20 000001C7 52                  <2>  push %1
+    21                              <2>  %rotate 1
+    20 000001C8 57                  <2>  push %1
+    21                              <2>  %rotate 1
+    23                              <1> 
+   225 000001C9 BBCDCCCCCC              		mov ebx, 0xCCCCCCCD		; magic number
+   226 000001CE 4831FF                  		xor rdi, rdi
+   227                                  
+   228 000001D1 89C1                    .loop:		mov ecx, eax			
+   229                                  
+   230 000001D3 F7E3                    		mul ebx                         ; divide by 10	
+   231 000001D5 C1EA03                  		shr edx, 3
+   232                                  
+   233 000001D8 89D0                    		mov eax, edx 	
+   234                                  
+   235 000001DA 678D1492                		lea edx, [edx*4 + edx]          ; multiply by 10
+   236 000001DE 678D5412D0              		lea edx, [edx * 2 - '0']	; and prep for sub	
+   237 000001E3 29D1                    		sub ecx, edx
+   238                                  
+   239 000001E5 48C1E708                    		shl rdi, 8                      ; make room for byte
+   240 000001E9 4801CF                  		add rdi, rcx
+   241                                  
+   242 000001EC 4883F800                		cmp rax, 0
+   243 000001F0 75DF                    		jnz .loop
+   244                                  
+   245 000001F2 4889F8                  		mov rax, rdi
+   246                                  
+   247                                  		_mrpop rbx, rdx, rdi
+     7                              <1>  %rep %0
+     8                              <1>  %rotate -1
+     9                              <1>  pop %1
+    10                              <1>  %endrep
+     8                              <2>  %rotate -1
+     9 000001F5 5F                  <2>  pop %1
+     8                              <2>  %rotate -1
+     9 000001F6 5A                  <2>  pop %1
+     8                              <2>  %rotate -1
+     9 000001F7 5B                  <2>  pop %1
+    11                              <1> 
+   248 000001F8 C3                      		ret
+   249                                  ;------------------------------------------------
+   250                                  
+   251                                  
+   252                                  ;------------------------------------------------
+   253                                  ; atoi
+   254                                  ;------------------------------------------------
+   255                                  ; Entry:	%1 - number to transorm
+   256                                  ;		%2 - bit depth of system(2\8\16)
+   257                                  ;		%3 - number of chars to write, also 0x0
+   258                                  ;		     will be added
+   259                                  ;		%4 - array to write
+   260                                  ;------------------------------------------------
+   261 000001F9 55                      atoi:		push rbp
+   262 000001FA 4889E5                  		mov rbp, rsp
+   263                                  
+   264                                  		_mpush rdi, rsi, rax, rcx
+    19                              <1>  %rep %0
+    20                              <1>  push %1
+    21                              <1>  %rotate 1
+    22                              <1>  %endrep
+    20 000001FD 57                  <2>  push %1
+    21                              <2>  %rotate 1
+    20 000001FE 56                  <2>  push %1
+    21                              <2>  %rotate 1
+    20 000001FF 50                  <2>  push %1
+    21                              <2>  %rotate 1
+    20 00000200 51                  <2>  push %1
+    21                              <2>  %rotate 1
+    23                              <1> 
+   265                                  
+   266 00000201 4C8B4510                		mov r8,  [rbp + 16]		; num
+   267 00000205 4C8B5518                		mov r10, [rbp + 24]		; bit mask
+   268 00000209 488B4D20                		mov rcx, [rbp + 32]		; number of chars
+   269 0000020D 488B7D28                		mov rdi, [rbp + 40]		; array addr
+   270                                  
+   271 00000211 4801CF                  		add rdi, rcx			; end of str
+   272 00000214 C60700                  		mov byte [rdi], 0x0		; and 0x0 to end
+   273 00000217 48FFCF                  		dec rdi
+   274                                  
+   275 0000021A 49FFCA                  		dec r10				; set bit mask
+   276                                  
+   277 0000021D 4D89C1                  		mov r9, r8
+   278                                  
+   279 00000220 4D21D1                  .convert:	and r9, r10
+   280                                  		
+   281 00000223 418A81[59000000]        		mov al, atoi_chars[r9]
+   282 0000022A 8807                    		mov byte [rdi], al
+   283 0000022C 48FFCF                  		dec rdi
+   284                                  
+   285 0000022F 4D89C1                  		mov r9, r8
+   286                                  		
+   287 00000232 4983FA07                		cmp r10, 0x7
+   288 00000236 7708                    		ja .hex
+   289 00000238 720C                    		jb .bin
+   290                                  
+   291 0000023A 49C1E903                		shr r9, 3
+   292 0000023E EB09                    		jmp .cont
+   293                                  			
+   294 00000240 49C1E904                .hex:		shr r9, 4
+   295 00000244 EB03                    		jmp .cont
+   296                                  
+   297 00000246 49D1E9                  .bin:		shr r9, 1
+   298                                  
+   299 00000249 4D89C8                  .cont:		mov r8, r9
+   300 0000024C E2D2                    		loop .convert
+   301                                  		
+   302                                  .loop_end:	_mrpop rdi, rsi, rax, rcx
+   302                              <1> .loop_end: 
+     7                              <1>  %rep %0
+     8                              <1>  %rotate -1
+     9                              <1>  pop %1
+    10                              <1>  %endrep
+     8                              <2>  %rotate -1
+     9 0000024E 59                  <2>  pop %1
+     8                              <2>  %rotate -1
+     9 0000024F 58                  <2>  pop %1
+     8                              <2>  %rotate -1
+     9 00000250 5E                  <2>  pop %1
+     8                              <2>  %rotate -1
+     9 00000251 5F                  <2>  pop %1
+    11                              <1> 
+   303                                  
+   304 00000252 5D                      		pop rbp
+   305 00000253 C3                      		ret
+   306                                  ;------------------------------------------------
+   307                                  
+   308                                  
+   309                                  section		.data
+   310                                  jmp_table:	_jmptbl_addr d, x, o, b, c, s, per
+   310                              <1> jmp_table: 
     41                              <1>  %rep %0
     42                              <1>  dq ident_arg.case_%1
     43                              <1>  %rotate 1
     44                              <1> 
     45                              <1>  %endrep
-    42 00000016 [8100000000000000]  <2>  dq ident_arg.case_%1
+    42 00000021 [9300000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 0000001E [A000000000000000]  <2>  dq ident_arg.case_%1
+    42 00000029 [C000000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 00000026 [A700000000000000]  <2>  dq ident_arg.case_%1
+    42 00000031 [EC00000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 0000002E [AE00000000000000]  <2>  dq ident_arg.case_%1
+    42 00000039 [1801000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 00000036 [B500000000000000]  <2>  dq ident_arg.case_%1
+    42 00000041 [4401000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 0000003E [BF00000000000000]  <2>  dq ident_arg.case_%1
+    42 00000049 [4E01000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-    42 00000046 [D300000000000000]  <2>  dq ident_arg.case_%1
+    42 00000051 [5901000000000000]  <2>  dq ident_arg.case_%1
     43                              <2>  %rotate 1
     44                              <2> 
-   226 0000004E 303132333435363738-     atoi_chars:	db "0123456789ABCDEF"
-   226 00000057 39414243444546     
-   227 0000005E <res 40h>               atoi_num_buff:	resb 64
-   227          ******************       warning: uninitialized space declared in non-BSS section `.data': zeroing [-w+zeroing]
-   228 0000009E 64786F626373250A        args:		db ARGSTR, 0xa
-   229 000000A6 <res 200h>              buffer:		resb BUFFSIZE
-   229          ******************       warning: uninitialized space declared in non-BSS section `.data': zeroing [-w+zeroing]
-   230                                  ;------------------------------------------------
-   231                                  
-   232                                  
-   233                                  
+   311 00000059 303132333435363738-     atoi_chars:	db "0123456789ABCDEF"
+   311 00000062 39414243444546     
+   312 00000069 2A2A2A2A2A2A2A2A2A-     atoi_num_buff:	db 65 dup('*')
+   312 00000072 2A2A2A2A2A2A2A2A2A-
+   312 0000007B 2A2A2A2A2A2A2A2A2A-
+   312 00000084 2A2A2A2A2A2A2A2A2A-
+   312 0000008D 2A2A2A2A2A2A2A2A2A-
+   312 00000096 2A2A2A2A2A2A2A2A2A-
+   312 0000009F 2A2A2A2A2A2A2A2A2A-
+   312 000000A8 2A2A               
+   313 000000AA 64786F626373250A        args:		db ARGSTR, 0xa
+   314 000000B2 <res 200h>              buffer:		resb BUFFSIZE
+   314          ******************       warning: uninitialized space declared in non-BSS section `.data': zeroing [-w+zeroing]
+   315                                  ;------------------------------------------------
+   316                                  
+   317                                  
+   318                                  

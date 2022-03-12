@@ -10,15 +10,12 @@ global _start
 %strlen		ARGLEN	ARGSTR
 ;------------------------------------------------
 
-_start:		mov rax, 0x14
-		call dectoi
-		mov qword [Msg], rdi
-
-		_mpush '&', '1', '2', '9', Msg, test	; TODO cdecl
+_start:		_mpush Msg, '2', 1488, 0x0F0F0F0F, test
+		mov r15, atoi_num_buff
 
 		call printf
 
-		_mrpop rcx, rcx, rcx, rcx, rcx, rcx
+		_mrpop rcx, rcx, rcx, rcx, rcx
 
 fin:
 		mov rax, 0x3c
@@ -26,8 +23,8 @@ fin:
 		syscall
 
 section		.data
-test:		db "%s%%%c%c%c", 0xa, "gg", 0xa, 0x0
-Msg:		db "(.Y.)", 0x0a, 0x0
+test:		db "__%x__%d__%%__%c__%s__", 0xa, "gg", 0xa, 0x0
+Msg:		db "(.Y.)", 0x0
 MsgLen		equ $ - Msg
 
 section		.text
@@ -40,7 +37,6 @@ section		.text
 ; Note_: rsi - curr adr in buffer
 ;
 ;------------------------------------------------
-; TODO buffer(write on overflow) or on newline
 
 printf:		push rbp
 		mov rbp, rsp
@@ -54,13 +50,13 @@ printf:		push rbp
 		jne .save
 		
 		inc rsi
-		mov byte bl, [rsi]		; TODO
+		mov byte bl, [rsi]
 		call ident_arg
 		inc rsi
 
 		jmp .print_loop
 
-.save:		mov byte al, [rsi]		; TODO movsb?
+.save:		mov byte al, [rsi]
 		call buff_ins	
 		inc rsi
 
@@ -70,6 +66,21 @@ printf:		push rbp
 		ret
 ;------------------------------------------------
 
+%macro		_two_sys_write 3
+		_mpush %1, %2, %3
+		mov rcx, [rbp + 16]
+		push rcx
+
+		call atoi
+
+		_mrpop r8, r8, r8, r8
+
+		mov rcx, atoi_num_buff
+		
+		call str_write
+
+		jmp .return
+%endmacro
 
 ;------------------------------------------------
 ; Entry: bl  - char
@@ -82,6 +93,9 @@ ident_arg:	mov rcx, ARGLEN - 1
 .ident_loop:	cmp byte bl, args[rcx]
 		je .switch
 		loop .ident_loop
+		
+		cmp byte bl, args[rcx]
+		je .switch
 
 		; default: dont do anything
 
@@ -96,19 +110,17 @@ ident_arg:	mov rcx, ARGLEN - 1
 		call dectoi
 
 		mov qword [atoi_num_buff], rax
+		mov byte atoi_num_buff[8], 0x0
 		mov rcx, atoi_num_buff
-		jmp .s_loop
-		
+
+		call str_write
 		jmp .return
 
-.case_x:	mov rax, 2
-		jmp .return
+.case_x:	_two_sys_write atoi_num_buff, 8, 0x10
 
-.case_o:	mov rax, 3
-		jmp .return
+.case_o:	_two_sys_write atoi_num_buff, 11, 0x8
 
-.case_b:	mov rax, 4
-		jmp .return
+.case_b:	_two_sys_write atoi_num_buff, 32, 0x2
 ; OK
 .case_c:	mov byte al, [rbp + 16]
 		call buff_ins
@@ -117,16 +129,8 @@ ident_arg:	mov rcx, ARGLEN - 1
 ; OK
 .case_s:	mov rcx, [rbp + 16]
 
-.s_loop:	mov byte al, [rcx]
-		cmp al, 0x0
-
-		je .return
-		
-		call buff_ins
-
-		inc rcx
-		jmp .s_loop
-	
+		call str_write
+		jmp .return
 ; OK
 .case_per:	sub rbp, 0x8
 		mov al, bl
@@ -134,6 +138,26 @@ ident_arg:	mov rcx, ARGLEN - 1
 
 .return:	mov rax, rdi
 		ret
+;------------------------------------------------
+
+
+
+;------------------------------------------------
+; str_write
+;------------------------------------------------
+; Entry: rcx - address of null-terminated string
+;------------------------------------------------
+str_write:	mov byte al, [rcx]
+		cmp al, 0x0
+
+		je .return
+		
+		call buff_ins
+
+		inc rcx
+		jmp str_write
+
+.return:	ret
 ;------------------------------------------------
 
 ;------------------------------------------------
@@ -161,7 +185,7 @@ buff_ins:	mov [rdi], al
 		sub rdx, buffer
 		call write_buff
 		mov rdi, buffer			; now buffer is free
-		mov rax, rdi			; TODO
+		mov rax, rdi
 		
 		ret
 ;------------------------------------------------
@@ -173,7 +197,7 @@ buff_ins:	mov [rdi], al
 ;_Note:	 rsi = addres of buffer
 ; Destr: rax
 ;------------------------------------------------
-write_buff:	_mpush rdi, rsi, rcx		; TODO ?
+write_buff:	_mpush rdi, rsi, rcx
 		
 		mov rax, 0x01
 		mov rdi, 1
@@ -221,17 +245,71 @@ dectoi:		_mpush rbx, rdx, rdi
 
 		_mrpop rbx, rdx, rdi
 		ret
+;------------------------------------------------
 
+
+;------------------------------------------------
+; atoi
+;------------------------------------------------
+; Entry:	%1 - number to transorm
+;		%2 - bit depth of system(2\8\16)
+;		%3 - number of chars to write, also 0x0
+;		     will be added
+;		%4 - array to write
+;------------------------------------------------
+atoi:		push rbp
+		mov rbp, rsp
+
+		_mpush rdi, rsi, rax, rcx
+
+		mov r8,  [rbp + 16]		; num
+		mov r10, [rbp + 24]		; bit mask
+		mov rcx, [rbp + 32]		; number of chars
+		mov rdi, [rbp + 40]		; array addr
+
+		add rdi, rcx			; end of str
+		mov byte [rdi], 0x0		; and 0x0 to end
+		dec rdi
+
+		dec r10				; set bit mask
+
+		mov r9, r8
+
+.convert:	and r9, r10
+		
+		mov al, atoi_chars[r9]
+		mov byte [rdi], al
+		dec rdi
+
+		mov r9, r8
+		
+		cmp r10, 0x7
+		ja .hex
+		jb .bin
+
+		shr r9, 3
+		jmp .cont
+			
+.hex:		shr r9, 4
+		jmp .cont
+
+.bin:		shr r9, 1
+
+.cont:		mov r8, r9
+		loop .convert
+		
+.loop_end:	_mrpop rdi, rsi, rax, rcx
+
+		pop rbp
+		ret
+;------------------------------------------------
 
 
 ;------------------------------------------------
 section		.data
 jmp_table:	_jmptbl_addr d, x, o, b, c, s, per
 atoi_chars:	db "0123456789ABCDEF"
-atoi_num_buff:	resb 64
+atoi_num_buff:	db 65 dup('*')
 args:		db ARGSTR, 0xa
 buffer:		resb BUFFSIZE
 ;------------------------------------------------
-
-
-
