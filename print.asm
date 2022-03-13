@@ -10,24 +10,22 @@ global _start
 %strlen		ARGLEN	ARGSTR
 ;------------------------------------------------
 
-_start:		_mpush Msg, '2', 1488, 0x0F0F0F0F, test
-		mov r15, atoi_num_buff
-
-		call printf
-
-		_mrpop rcx, rcx, rcx, rcx, rcx
-
-fin:
-		mov rax, 0x3c
-		xor rdi, rdi
-		syscall
-
-section		.data
-test:		db "__%x__%d__%%__%c__%s__", 0xa, "gg", 0xa, 0x0
-Msg:		db "(.Y.)", 0x0
-MsgLen		equ $ - Msg
+		global Print
 
 section		.text
+
+Print:		pop r11				; save ret addr to r15
+		_mpush r9, r8, rcx, rdx, rsi, rdi
+
+		call __printf
+
+		_mrpop r9, r8, rcx, rdx, rsi, rdi
+
+		push r11			; restore ret addr
+		ret
+;------------------------------------------------
+
+
 
 ;------------------------------------------------
 ; printf
@@ -38,8 +36,10 @@ section		.text
 ;
 ;------------------------------------------------
 
-printf:		push rbp
+__printf:	push rbp
 		mov rbp, rsp
+
+		_mpush rbx, r12, r13, r14, r15
 
 		mov rsi, [rbp + 16]
 		mov rdi, buffer
@@ -62,7 +62,9 @@ printf:		push rbp
 
 		jmp .print_loop
 
-.print_end:	pop rbp
+.print_end:	_mrpop rbx, r12, r13, r14, r15
+
+		pop rbp
 		ret
 ;------------------------------------------------
 
