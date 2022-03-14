@@ -10,7 +10,7 @@ global _start
 %strlen		ARGLEN	ARGSTR
 ;------------------------------------------------
 
-_start:		_mpush Msg, '2', 1488, 0x0F0F0F0F, test
+_start:		_mpush Msg, '2', -1488, 0x0F0F0F0F, test
 		mov r15, atoi_num_buff
 
 		call printf
@@ -107,7 +107,18 @@ ident_arg:	mov rcx, ARGLEN - 1
 		jmp rcx
 
 .case_d:	mov rax, [rbp + 16]
-		call dectoi
+		
+		test rax, rax
+		jnl .pos
+		
+		push rax
+		mov al, '-'
+		call buff_ins
+		pop rax
+
+		neg rax
+
+.pos:		call dectoi
 
 		mov qword [atoi_num_buff], rax
 		mov byte atoi_num_buff[8], 0x0
