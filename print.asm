@@ -2,7 +2,6 @@
 %include "macros.mac"
 
 section .text
-global _start
 
 
 ;------------------------------------------------
@@ -14,14 +13,14 @@ global _start
 
 section		.text
 
-Print:		pop r11				; save ret addr to r15
+Print:		pop r11				; save ret addr to r11
 		_mpush r9, r8, rcx, rdx, rsi, rdi
 
 		call __printf
-
+		
 		_mrpop r9, r8, rcx, rdx, rsi, rdi
-
 		push r11			; restore ret addr
+
 		ret
 ;------------------------------------------------
 
@@ -39,7 +38,7 @@ Print:		pop r11				; save ret addr to r15
 __printf:	push rbp
 		mov rbp, rsp
 
-		_mpush rbx, r12, r13, r14, r15
+		_mpush rbx, r11, r12, r13, r14, r15
 
 		mov rsi, [rbp + 16]
 		mov rdi, buffer
@@ -62,7 +61,7 @@ __printf:	push rbp
 
 		jmp .print_loop
 
-.print_end:	_mrpop rbx, r12, r13, r14, r15
+.print_end:	_mrpop rbx, r11, r12, r13, r14, r15
 
 		pop rbp
 		ret
