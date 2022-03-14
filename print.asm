@@ -108,7 +108,18 @@ ident_arg:	mov rcx, ARGLEN - 1
 		jmp rcx
 
 .case_d:	mov rax, [rbp + 16]
-		call dectoi
+	
+		test eax, eax
+		jnl .pos
+		
+		push rax
+		mov al, '-'
+		call buff_ins
+		pop rax
+
+		neg rax
+
+.pos:		call dectoi
 
 		mov qword [atoi_num_buff], rax
 		mov byte atoi_num_buff[8], 0x0
@@ -236,7 +247,7 @@ dectoi:		_mpush rbx, rdx, rdi
 		lea edx, [edx * 2 - '0']	; and prep for sub	
 		sub ecx, edx
 
-    		shl rdi, 8                      ; make room for byte
+    		shl rdi, 8                      ; make space for byte
 		add rdi, rcx
 
 		cmp rax, 0

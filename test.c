@@ -1,8 +1,9 @@
+#include <cstdint>
 extern "C" int Print(const char *str, ...);
 
 int main()
 {
-	int a = 999;
+	int a = -999;
 	int b = 0xFFF;
 	const char word[] = "?|?|?|?|?|?";
 
